@@ -1,98 +1,120 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { MedicationCard } from '@/components/alaga/MedicationCard';
+import { ScreenContainer } from '@/components/alaga/ScreenContainer';
+import { SectionHeader } from '@/components/alaga/SectionHeader';
+import { AlagaColors } from '@/constants/alaga-theme';
+import { todayDateLabel, todayMedications } from '@/data/mock-medications';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const router = useRouter();
+  const dueNow = todayMedications.filter((medication) => medication.status === 'Due Now');
+  const laterToday = todayMedications.filter((medication) => medication.status === 'Later');
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <ScreenContainer>
+      <View style={styles.header}>
+        <Text style={styles.logoText}>Alaga</Text>
+        <View style={styles.settingsButton}>
+          <Ionicons name="settings-outline" size={21} color="#5A6B8A" />
+        </View>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.date}>{todayDateLabel}</Text>
+        <Text style={styles.title}>Today&apos;s Medications</Text>
+
+        {dueNow.length > 0 ? (
+          <View style={styles.sectionWrap}>
+            <SectionHeader title={dueNow.length > 1 ? `Due Now (${dueNow.length})` : 'Due Now'} />
+            <View style={styles.list}>
+              {dueNow.map((medication) => (
+                <MedicationCard
+                  key={medication.id}
+                  medication={medication}
+                  variant="due-now"
+                  onPress={() => router.push(`/reminder/${medication.id}`)}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
+
+        <View style={styles.divider} />
+
+        {laterToday.length > 0 ? (
+          <View>
+            <SectionHeader title="Later Today" />
+            <View style={styles.list}>
+              {laterToday.map((medication) => (
+                <MedicationCard
+                  key={medication.id}
+                  medication={medication}
+                  variant="later"
+                  onPress={() => router.push(`/reminder/${medication.id}`)}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
+      </ScrollView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  header: {
+    backgroundColor: AlagaColors.surface,
+    paddingTop: 12,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: AlagaColors.border,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  logoText: {
+    fontSize: 30,
+    fontWeight: '800',
+    color: AlagaColors.textPrimary,
+    letterSpacing: 0.4,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  settingsButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#EEE9E2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 100,
+  },
+  date: {
+    color: AlagaColors.textMuted,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  title: {
+    color: AlagaColors.textPrimary,
+    fontSize: 26,
+    fontWeight: '800',
+    marginBottom: 16,
+  },
+  sectionWrap: {
+    marginBottom: 10,
+  },
+  list: {
+    gap: 10,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: AlagaColors.border,
+    marginVertical: 16,
   },
 });

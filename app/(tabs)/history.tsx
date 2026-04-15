@@ -1,0 +1,128 @@
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { MedicationCard } from '@/components/alaga/MedicationCard';
+import { ScreenContainer } from '@/components/alaga/ScreenContainer';
+import { SectionHeader } from '@/components/alaga/SectionHeader';
+import { AlagaColors } from '@/constants/alaga-theme';
+import { historyToday, historyYesterday, last7DaysHistory } from '@/data/mock-medications';
+
+type HistoryFilter = 'today' | 'yesterday' | 'last7';
+
+const filters: { key: HistoryFilter; label: string }[] = [
+  { key: 'today', label: 'Today' },
+  { key: 'yesterday', label: 'Yesterday' },
+  { key: 'last7', label: 'Last 7 Days' },
+];
+
+export default function HistoryScreen() {
+  const [filter, setFilter] = useState<HistoryFilter>('today');
+
+  return (
+    <ScreenContainer>
+      <View style={styles.header}>
+        <Text style={styles.title}>History</Text>
+
+        <View style={styles.filterWrap}>
+          {filters.map((item) => {
+            const active = item.key === filter;
+            return (
+              <Pressable
+                key={item.key}
+                onPress={() => setFilter(item.key)}
+                style={[styles.filterButton, active && styles.filterButtonActive]}>
+                <Text style={[styles.filterText, active && styles.filterTextActive]}>{item.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {filter === 'today' ? (
+          <HistoryGroup label="Today - Mon, Apr 13" medications={historyToday} />
+        ) : null}
+
+        {filter === 'yesterday' ? (
+          <HistoryGroup label="Yesterday - Sun, Apr 12" medications={historyYesterday} />
+        ) : null}
+
+        {filter === 'last7'
+          ? last7DaysHistory.map((group, index) => (
+              <View key={group.id}>
+                <HistoryGroup label={group.label} medications={group.medications} />
+                {index < last7DaysHistory.length - 1 ? <View style={styles.divider} /> : null}
+              </View>
+            ))
+          : null}
+      </ScrollView>
+    </ScreenContainer>
+  );
+}
+
+function HistoryGroup({ label, medications }: { label: string; medications: typeof historyToday }) {
+  return (
+    <View>
+      <SectionHeader title={label} />
+      <View style={styles.list}>
+        {medications.map((medication) => (
+          <MedicationCard key={medication.id} medication={medication} variant="history" />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  header: {
+    backgroundColor: AlagaColors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: AlagaColors.border,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 14,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: AlagaColors.textPrimary,
+    marginBottom: 14,
+  },
+  filterWrap: {
+    flexDirection: 'row',
+    backgroundColor: '#EDE8E1',
+    borderRadius: 14,
+    padding: 3,
+  },
+  filterButton: {
+    flex: 1,
+    minHeight: 38,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterButtonActive: {
+    backgroundColor: '#FFFFFF',
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: AlagaColors.textMuted,
+  },
+  filterTextActive: {
+    color: AlagaColors.textPrimary,
+    fontWeight: '700',
+  },
+  content: {
+    padding: 20,
+    paddingBottom: 100,
+  },
+  list: {
+    gap: 10,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: AlagaColors.border,
+    marginVertical: 18,
+  },
+});
