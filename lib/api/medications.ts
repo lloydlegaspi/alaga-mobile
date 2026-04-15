@@ -114,6 +114,11 @@ export async function createMedication(input: CreateMedicationInput): Promise<Me
 
   if (error || !data) {
     console.error('Error creating medication:', error);
+    if (error?.code === '42501') {
+      console.warn(
+        'Medication insert was blocked by Supabase RLS. Apply the medications_insert_all policy migration in supabase/migrations.',
+      );
+    }
     return null;
   }
 
