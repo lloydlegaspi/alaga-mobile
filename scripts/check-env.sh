@@ -1,6 +1,10 @@
 #!/usr/bin/env sh
 set -eu
 
+if [ -f .env ]; then
+  export $(grep -v '^#' .env | xargs)
+fi
+
 required_vars="EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY"
 missing=0
 

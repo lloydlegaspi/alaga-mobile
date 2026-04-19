@@ -4,7 +4,7 @@
     "slug": "cappy-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/cappy-logo.png",
+    "icon": "./assets/images/cappy-logo-square.png",
     "scheme": "cappymobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,16 +14,17 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/cappy-logo.png",
-        "backgroundImage": "./assets/images/cappy-logo.png",
-        "monochromeImage": "./assets/images/cappy-logo.png"
+        "foregroundImage": "./assets/images/cappy-logo-square.png",
+        "backgroundImage": "./assets/images/cappy-logo-square.png",
+        "monochromeImage": "./assets/images/cappy-logo-square.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "package": "com.lloydlegaspi.cappymobile"
     },
     "web": {
       "output": "static",
