@@ -1,6 +1,9 @@
 export type ReminderAction = 'taken' | 'snoozed' | 'missed';
 export type EmotionState = 'calm' | 'confused' | 'stressed';
 export type EmotionSource = 'none' | 'self_report' | 'behavior_rule';
+export type UserTextSize = 'Standard' | 'Large';
+export type UserReminderSound = 'On' | 'Off';
+export type UserLanguage = 'English' | 'Filipino';
 
 export interface MedicationRow {
   id: string;
@@ -26,6 +29,19 @@ export interface ReminderEventRow {
   snooze_count: number | null;
   pill_photo_open_count: number | null;
   created_at: string;
+}
+
+export interface UserSettingsRow {
+  id: string;
+  display_name: string | null;
+  caregiver_name: string | null;
+  caregiver_phone: string | null;
+  text_size: UserTextSize;
+  reminder_sound: UserReminderSound;
+  high_contrast: boolean;
+  language: UserLanguage;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CreateMedicationInput {

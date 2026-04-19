@@ -84,6 +84,12 @@ function mergeEventWithMedication(event: ReminderEventRow, medication: Medicatio
     indication: baseMedication?.indication ?? 'Medication reminder',
     status: toStatus(event.action),
     image: baseMedication?.image ?? 'https://images.unsplash.com/photo-1740592756330-adb8c1f5fbe7?w=500&h=500&fit=crop',
+    emotionState: event.emotion_state,
+    emotionSource: event.emotion_source,
+    ruleTrigger: event.rule_trigger,
+    dwellTimeSeconds: event.dwell_time_seconds,
+    snoozeCount: event.snooze_count,
+    pillPhotoOpenCount: event.pill_photo_open_count,
   };
 }
 
@@ -109,7 +115,57 @@ export async function createReminderEvent(input: CreateReminderEventInput) {
 
   const latestTodayEvent = latestTodayEvents?.[0];
   if (latestTodayEvent && latestTodayEvent.action === input.action) {
-    return latestTodayEvent;
+    const nextEmotionState = input.emotionState ?? latestTodayEvent.emotion_state ?? 'calm';
+    const nextEmotionSource = input.emotionSource ?? latestTodayEvent.emotion_source ?? 'none';
+    const nextRuleTrigger =
+      nextEmotionSource === 'self_report'
+        ? null
+        : input.ruleTrigger ?? latestTodayEvent.rule_trigger ?? null;
+    const nextDwellTimeSeconds =
+      typeof input.dwellTimeSeconds === 'number'
+        ? Math.max(input.dwellTimeSeconds, latestTodayEvent.dwell_time_seconds ?? 0)
+        : (latestTodayEvent.dwell_time_seconds ?? 0);
+    const nextSnoozeCount =
+      typeof input.snoozeCount === 'number'
+        ? Math.max(input.snoozeCount, latestTodayEvent.snooze_count ?? 0)
+        : (latestTodayEvent.snooze_count ?? 0);
+    const nextPillPhotoOpenCount =
+      typeof input.pillPhotoOpenCount === 'number'
+        ? Math.max(input.pillPhotoOpenCount, latestTodayEvent.pill_photo_open_count ?? 0)
+        : (latestTodayEvent.pill_photo_open_count ?? 0);
+
+    const hasMetadataUpdates =
+      latestTodayEvent.emotion_state !== nextEmotionState ||
+      latestTodayEvent.emotion_source !== nextEmotionSource ||
+      (latestTodayEvent.rule_trigger ?? null) !== nextRuleTrigger ||
+      (latestTodayEvent.dwell_time_seconds ?? 0) !== nextDwellTimeSeconds ||
+      (latestTodayEvent.snooze_count ?? 0) !== nextSnoozeCount ||
+      (latestTodayEvent.pill_photo_open_count ?? 0) !== nextPillPhotoOpenCount;
+
+    if (!hasMetadataUpdates) {
+      return latestTodayEvent;
+    }
+
+    const { data: updatedEvent, error: updateError } = await supabase
+      .from('reminder_events')
+      .update({
+        emotion_state: nextEmotionState,
+        emotion_source: nextEmotionSource,
+        rule_trigger: nextRuleTrigger,
+        dwell_time_seconds: nextDwellTimeSeconds,
+        snooze_count: nextSnoozeCount,
+        pill_photo_open_count: nextPillPhotoOpenCount,
+      })
+      .eq('id', latestTodayEvent.id)
+      .select('*')
+      .single();
+
+    if (updateError || !updatedEvent) {
+      console.error('Error updating reminder event metadata:', updateError);
+      return latestTodayEvent;
+    }
+
+    return updatedEvent;
   }
 
   const { data, error } = await supabase
@@ -120,7 +176,7 @@ export async function createReminderEvent(input: CreateReminderEventInput) {
       action: input.action,
       emotion_state: input.emotionState ?? 'calm',
       emotion_source: input.emotionSource ?? 'none',
-      rule_trigger: input.ruleTrigger ?? null,
+      rule_trigger: input.emotionSource === 'self_report' ? null : input.ruleTrigger ?? null,
       dwell_time_seconds: input.dwellTimeSeconds ?? 0,
       snooze_count: input.snoozeCount ?? 0,
       pill_photo_open_count: input.pillPhotoOpenCount ?? 0,
@@ -134,6 +190,31 @@ export async function createReminderEvent(input: CreateReminderEventInput) {
   }
 
   return data;
+}
+
+export async function getLatestReminderEventForMedication(medicationId?: string): Promise<ReminderEventRow | null> {
+  if (!supabase || !medicationId) {
+    return null;
+  }
+
+  const today = new Date();
+
+  const { data, error } = await supabase
+    .from('reminder_events')
+    .select('*')
+    .eq('medication_id', medicationId)
+    .gte('scheduled_for', getStartOfDayIso(today))
+    .lte('scheduled_for', getEndOfDayIso(today))
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching latest reminder event:', error);
+    return null;
+  }
+
+  return data ?? null;
 }
 
 export async function getReminderEvents(startDate: string, endDate: string): Promise<ReminderEventRow[]> {

@@ -3,12 +3,13 @@ import type { Medication } from '@/types/medication';
 import type { CreateMedicationInput, MedicationRow, ReminderEventRow, UpdateMedicationInput } from '@/types/supabase';
 
 import {
-  historyToday,
-  todayMedications as fallbackMedications,
+    todayMedications as fallbackMedications
 } from '@/data/mock-medications';
 
 const DEFAULT_PILL_IMAGE =
   'https://images.unsplash.com/photo-1740592756330-adb8c1f5fbe7?w=500&h=500&fit=crop';
+
+const localDemoMedications: Medication[] = [...fallbackMedications];
 
 function parseTimeToMinutes(timeOfDay: string | null | undefined): number {
   if (!timeOfDay) return Number.POSITIVE_INFINITY;
@@ -115,7 +116,7 @@ function sortByTimeAscending(medications: Medication[]): Medication[] {
 
 export async function getMedications(): Promise<Medication[]> {
   if (!supabase) {
-    return sortByTimeAscending(fallbackMedications);
+    return sortByTimeAscending(localDemoMedications);
   }
 
   const [medicationsResult, latestEventsByMedication] = await Promise.all([
@@ -141,7 +142,7 @@ export async function getMedicationById(id?: string): Promise<Medication | null>
   }
 
   if (!supabase) {
-    return fallbackMedications.find((medication) => medication.id === id) ?? null;
+    return localDemoMedications.find((medication) => medication.id === id) ?? null;
   }
 
   const [medicationResult, latestEventsByMedication] = await Promise.all([
@@ -170,7 +171,7 @@ export async function getMedicationByIdRaw(id?: string): Promise<Medication | nu
   }
 
   if (!supabase) {
-    return fallbackMedications.find((medication) => medication.id === id) ?? null;
+    return localDemoMedications.find((medication) => medication.id === id) ?? null;
   }
 
   const { data, error } = await supabase
@@ -189,8 +190,21 @@ export async function getMedicationByIdRaw(id?: string): Promise<Medication | nu
 
 export async function createMedication(input: CreateMedicationInput): Promise<Medication | null> {
   if (!supabase) {
-    console.warn('Supabase is not configured. Falling back to local demo data only.');
-    return null;
+    const created: Medication = {
+      id: `local-${Date.now()}`,
+      name: input.name,
+      dosage: input.dosage,
+      purpose: input.purpose ?? null,
+      frequency: input.frequency ?? null,
+      time: input.time_of_day,
+      indication: input.purpose ?? 'Medication reminder',
+      status: computeStatus(input.time_of_day),
+      image: input.pill_photo_url ?? DEFAULT_PILL_IMAGE,
+      pillPhotoUrl: input.pill_photo_url ?? null,
+    };
+
+    localDemoMedications.push(created);
+    return created;
   }
 
   const { data, error } = await supabase
@@ -221,8 +235,28 @@ export async function createMedication(input: CreateMedicationInput): Promise<Me
 
 export async function updateMedicationById(id: string, input: UpdateMedicationInput): Promise<Medication | null> {
   if (!supabase) {
-    console.warn('Supabase is not configured. Medication update was skipped.');
-    return null;
+    const index = localDemoMedications.findIndex((medication) => medication.id === id);
+
+    if (index < 0) {
+      return null;
+    }
+
+    const current = localDemoMedications[index];
+    const updated: Medication = {
+      ...current,
+      name: input.name,
+      dosage: input.dosage,
+      purpose: input.purpose ?? null,
+      frequency: input.frequency ?? null,
+      time: input.time_of_day,
+      indication: input.purpose ?? current.indication,
+      status: computeStatus(input.time_of_day),
+      image: input.pill_photo_url ?? DEFAULT_PILL_IMAGE,
+      pillPhotoUrl: input.pill_photo_url ?? null,
+    };
+
+    localDemoMedications[index] = updated;
+    return updated;
   }
 
   const { data, error } = await supabase
@@ -251,7 +285,15 @@ export async function updateMedicationById(id: string, input: UpdateMedicationIn
 export async function deleteMedicationByIdWithReason(id: string): Promise<{ ok: boolean; code?: string; message?: string }> {
   try {
     if (!supabase) {
-      return { ok: false, message: 'Supabase is not configured.' };
+      const originalLength = localDemoMedications.length;
+      const next = localDemoMedications.filter((medication) => medication.id !== id);
+
+      if (next.length === originalLength) {
+        return { ok: false, code: 'NO_ROWS_DELETED', message: 'Medication not found in local demo data.' };
+      }
+
+      localDemoMedications.splice(0, localDemoMedications.length, ...next);
+      return { ok: true };
     }
 
     const { data, error } = await supabase
