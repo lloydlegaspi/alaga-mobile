@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "cappy-mobile",
+    "name": "Cappy",
     "slug": "cappy-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/cappy-logo-square.png",
+    "icon": "./assets/images/cappy-app-display.png",
     "scheme": "cappymobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

@@ -1,4 +1,4 @@
-# Cappy Mobile (Expo + Supabase)
+# Cappy (Expo + Supabase)
 
 ## What this app does
 
@@ -116,9 +116,25 @@ npm run android
 npm run web
 ```
 
+## Fast local bug-fixing (one-time dev build)
+
+Create and install a development build once:
+
+```bash
+npx eas build -p android --profile development
+```
+
+After installing that APK, use it for day-to-day coding:
+
+```bash
+npx expo start --dev-client
+```
+
+Rebuild only when native configuration or native dependencies change.
+
 ## Build Android APK with EAS (internal distribution)
 
-This repo is configured for internal APK builds in `eas.json` with the `preview` profile.
+This repo is configured for internal APK builds in `eas.json`, including a `development` profile and a `preview` profile.
 
 Existing Expo/EAS config that affects build behavior:
 

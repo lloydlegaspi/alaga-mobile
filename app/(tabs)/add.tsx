@@ -33,19 +33,39 @@ import {
 import { uploadMedicationImage } from '@/lib/storage/medicationImageUpload';
 import type { Medication } from '@/types/medication';
 
-const frequencies = ['Every day', 'Morning only', 'Afternoon only', 'Evening only'] as const;
-const frequencyToSchema: Record<(typeof frequencies)[number], string> = {
+const FREQUENCY_OPTIONS = [
+  'Once daily',
+  'Twice daily',
+  'Three times daily',
+  'Every 4 hours',
+  'Every 6 hours',
+  'Every 8 hours',
+  'Every 12 hours',
+  'As needed',
+] as const;
+
+type FrequencyOption = (typeof FREQUENCY_OPTIONS)[number];
+
+const DEFAULT_FREQUENCY: FrequencyOption = 'Once daily';
+
+const LEGACY_FREQUENCY_TO_OPTION: Record<string, FrequencyOption> = {
   'Every day': 'Once daily',
-  'Morning only': 'Morning only',
-  'Afternoon only': 'Afternoon only',
-  'Evening only': 'Evening only',
+  'Morning only': 'Once daily',
+  'Afternoon only': 'Once daily',
+  'Evening only': 'Once daily',
 };
-const schemaToFrequency: Record<string, (typeof frequencies)[number]> = {
-  'Once daily': 'Every day',
-  'Morning only': 'Morning only',
-  'Afternoon only': 'Afternoon only',
-  'Evening only': 'Evening only',
-};
+
+function toFrequencyOption(value: string | null | undefined): FrequencyOption {
+  if (!value) {
+    return DEFAULT_FREQUENCY;
+  }
+
+  if ((FREQUENCY_OPTIONS as readonly string[]).includes(value)) {
+    return value as FrequencyOption;
+  }
+
+  return LEGACY_FREQUENCY_TO_OPTION[value] ?? DEFAULT_FREQUENCY;
+}
 
 export default function AddMedicationScreen() {
   const router = useRouter();
@@ -57,7 +77,8 @@ export default function AddMedicationScreen() {
   const [dosage, setDosage] = useState('');
   const [purpose, setPurpose] = useState('');
   const [time, setTime] = useState('8:00 AM');
-  const [frequency, setFrequency] = useState<(typeof frequencies)[number]>('Every day');
+  const [frequency, setFrequency] = useState<FrequencyOption>(DEFAULT_FREQUENCY);
+  const [isFrequencyMenuOpen, setIsFrequencyMenuOpen] = useState(false);
   const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
   const [photoPreviewUri, setPhotoPreviewUri] = useState<string | null>(null);
   const [pendingPhotoUri, setPendingPhotoUri] = useState<string | null>(null);
@@ -98,7 +119,8 @@ export default function AddMedicationScreen() {
       setDosage(record.dosage);
       setPurpose(record.purpose ?? '');
       setTime(record.time);
-      setFrequency(schemaToFrequency[record.frequency ?? 'Once daily'] ?? 'Every day');
+      setFrequency(toFrequencyOption(record.frequency));
+      setIsFrequencyMenuOpen(false);
 
       const loadedPhoto = record.pillPhotoUrl ?? null;
       setExistingPhotoUrl(loadedPhoto);
@@ -176,6 +198,7 @@ export default function AddMedicationScreen() {
       return;
     }
 
+    setIsFrequencyMenuOpen(false);
     setIsSaving(true);
 
     const medicationPayload = {
@@ -183,7 +206,7 @@ export default function AddMedicationScreen() {
       dosage: dosage.trim(),
       purpose: purpose.trim() || null,
       time_of_day: time.trim(),
-      frequency: frequencyToSchema[frequency],
+      frequency,
     };
 
     let finalPhotoUrl = existingPhotoUrl;
@@ -402,28 +425,50 @@ export default function AddMedicationScreen() {
         />
 
         <FieldLabel text="Frequency" />
-        <View style={styles.frequencyGrid}>
-          {frequencies.map((item) => {
-            const selected = item === frequency;
-            return (
-              <Pressable
-                key={item}
-                onPress={() => setFrequency(item)}
-                style={[styles.frequencyButton, selected && styles.frequencyButtonActive]}>
-                {selected ? (
-                  <Ionicons
-                    name="checkmark"
-                    size={16}
-                    color={CappyColors.accentBlue}
-                    style={styles.freqIcon}
-                  />
-                ) : null}
-                <Text style={[styles.frequencyText, selected && styles.frequencyTextActive]}>
-                  {item}
-                </Text>
-              </Pressable>
-            );
-          })}
+        <View style={styles.dropdownWrap}>
+          <Pressable
+            onPress={() => setIsFrequencyMenuOpen((current) => !current)}
+            disabled={isFormLocked}
+            style={[
+              styles.dropdownTrigger,
+              isFrequencyMenuOpen && styles.dropdownTriggerActive,
+              isFormLocked && styles.dropdownTriggerDisabled,
+            ]}>
+            <Text style={styles.dropdownTriggerText}>{frequency}</Text>
+            <Ionicons
+              name={isFrequencyMenuOpen ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={CappyColors.accentBlue}
+            />
+          </Pressable>
+
+          {isFrequencyMenuOpen ? (
+            <View style={styles.dropdownMenu}>
+              {FREQUENCY_OPTIONS.map((item, index) => {
+                const selected = item === frequency;
+                const isLast = index === FREQUENCY_OPTIONS.length - 1;
+
+                return (
+                  <Pressable
+                    key={item}
+                    onPress={() => {
+                      setFrequency(item);
+                      setIsFrequencyMenuOpen(false);
+                    }}
+                    disabled={isFormLocked}
+                    style={[
+                      styles.dropdownOption,
+                      isLast && styles.dropdownOptionLast,
+                      selected && styles.dropdownOptionActive,
+                    ]}>
+                    <Text style={[styles.dropdownOptionText, selected && styles.dropdownOptionTextActive]}>
+                      {item}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : null}
         </View>
 
         <FieldLabel text="Pill Photo" />
@@ -547,37 +592,58 @@ const styles = StyleSheet.create({
   inputActive: {
     borderColor: CappyColors.accentBlue,
   },
-  frequencyGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
+  dropdownWrap: {
     marginBottom: 8,
   },
-  frequencyButton: {
-    width: '48.5%',
+  dropdownTrigger: {
     minHeight: 56,
     borderRadius: 16,
     borderWidth: 2.5,
     borderColor: '#D4E0F0',
     backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
     flexDirection: 'row',
-    paddingHorizontal: 8,
+    paddingHorizontal: 14,
   },
-  frequencyButtonActive: {
+  dropdownTriggerActive: {
     borderColor: CappyColors.accentBlue,
+  },
+  dropdownTriggerDisabled: {
+    opacity: 0.6,
+  },
+  dropdownTriggerText: {
+    color: CappyColors.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  dropdownMenu: {
+    marginTop: 8,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#D4E0F0',
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+  },
+  dropdownOption: {
+    minHeight: 48,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E8EEF8',
+  },
+  dropdownOptionLast: {
+    borderBottomWidth: 0,
+  },
+  dropdownOptionActive: {
     backgroundColor: '#EBF3FB',
   },
-  freqIcon: {
-    marginRight: 6,
-  },
-  frequencyText: {
-    color: '#8A9BBB',
-    fontSize: 14,
+  dropdownOptionText: {
+    color: '#516584',
+    fontSize: 15,
     fontWeight: '500',
   },
-  frequencyTextActive: {
+  dropdownOptionTextActive: {
     color: CappyColors.accentBlue,
     fontWeight: '700',
   },

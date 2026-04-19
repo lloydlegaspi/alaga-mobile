@@ -1,3 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { getAuthenticatedUserId } from '@/lib/auth/guestSession';
 import { supabase } from '@/lib/supabase';
 import {
@@ -8,6 +10,25 @@ import {
     type UserSettings,
 } from '@/types/settings';
 import type { UserSettingsRow } from '@/types/supabase';
+
+const SETTINGS_CACHE_KEY_PREFIX = 'cappy:user-settings:';
+const SETTINGS_CACHE_LOCAL_KEY = `${SETTINGS_CACHE_KEY_PREFIX}local`;
+
+function getSettingsCacheKey(userId: string | null): string {
+  return userId ? `${SETTINGS_CACHE_KEY_PREFIX}${userId}` : SETTINGS_CACHE_LOCAL_KEY;
+}
+
+function coerceTextSize(value: unknown): TextSizeOption {
+  return value === 'Large' ? 'Large' : 'Standard';
+}
+
+function coerceReminderSound(value: unknown): ReminderSoundOption {
+  return value === 'Off' ? 'Off' : 'On';
+}
+
+function coerceLanguage(value: unknown): LanguageOption {
+  return value === 'Filipino' ? 'Filipino' : 'English';
+}
 
 function normalizeDisplayName(value: string | null | undefined): string {
   const trimmed = value?.trim();
@@ -56,15 +77,61 @@ function getDefaultSettingsForUser(userId: string | null): UserSettings {
   };
 }
 
+function sanitizeSettingsForUser(
+  value: Partial<UserSettings> | null | undefined,
+  userId: string | null,
+): UserSettings {
+  const defaults = getDefaultSettingsForUser(userId);
+
+  return {
+    ...defaults,
+    id: userId ?? defaults.id,
+    displayName: normalizeDisplayName(value?.displayName ?? defaults.displayName),
+    caregiverName: (value?.caregiverName ?? defaults.caregiverName).trim(),
+    caregiverPhone: (value?.caregiverPhone ?? defaults.caregiverPhone).trim(),
+    textSize: coerceTextSize(value?.textSize),
+    reminderSound: coerceReminderSound(value?.reminderSound),
+    highContrast: Boolean(value?.highContrast),
+    language: coerceLanguage(value?.language),
+  };
+}
+
+async function readCachedSettings(userId: string | null): Promise<UserSettings | null> {
+  try {
+    const cacheKey = getSettingsCacheKey(userId);
+    const raw = await AsyncStorage.getItem(cacheKey);
+
+    if (!raw) {
+      return null;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<UserSettings>;
+    return sanitizeSettingsForUser(parsed, userId);
+  } catch (error) {
+    console.error('Error reading cached user settings:', error);
+    return null;
+  }
+}
+
+async function writeCachedSettings(settings: UserSettings, userId: string | null): Promise<void> {
+  try {
+    const cacheKey = getSettingsCacheKey(userId);
+    await AsyncStorage.setItem(cacheKey, JSON.stringify(settings));
+  } catch (error) {
+    console.error('Error writing cached user settings:', error);
+  }
+}
+
 export async function getUserSettings(): Promise<UserSettings> {
+  const userId = await getAuthenticatedUserId();
+  const cached = await readCachedSettings(userId);
+
   if (!supabase) {
-    return DEFAULT_USER_SETTINGS;
+    return cached ?? getDefaultSettingsForUser(userId);
   }
 
-  const userId = await getAuthenticatedUserId();
-
   if (!userId) {
-    return DEFAULT_USER_SETTINGS;
+    return cached ?? getDefaultSettingsForUser(userId);
   }
 
   const { data, error } = await supabase
@@ -75,14 +142,16 @@ export async function getUserSettings(): Promise<UserSettings> {
 
   if (error) {
     console.error('Error fetching user settings:', error);
-    return getDefaultSettingsForUser(userId);
+    return cached ?? getDefaultSettingsForUser(userId);
   }
 
   if (!data) {
-    return getDefaultSettingsForUser(userId);
+    return cached ?? getDefaultSettingsForUser(userId);
   }
 
-  return mapRowToSettings(data);
+  const mapped = mapRowToSettings(data);
+  await writeCachedSettings(mapped, userId);
+  return mapped;
 }
 
 export async function updateUserSettings(
@@ -90,25 +159,18 @@ export async function updateUserSettings(
 ): Promise<UserSettings> {
   const userId = await getAuthenticatedUserId();
 
-  if (!userId) {
-    return {
-      ...DEFAULT_USER_SETTINGS,
-      ...next,
-    };
-  }
-
   const current = await getUserSettings();
 
-  const merged: UserSettings = {
-    ...current,
-    ...next,
-    id: current.id && current.id !== 'default' ? current.id : userId,
-    displayName: normalizeDisplayName(next.displayName ?? current.displayName),
-    caregiverName: (next.caregiverName ?? current.caregiverName).trim(),
-    caregiverPhone: (next.caregiverPhone ?? current.caregiverPhone).trim(),
-  };
+  const merged = sanitizeSettingsForUser(
+    {
+      ...current,
+      ...next,
+    },
+    userId,
+  );
 
-  if (!supabase) {
+  if (!supabase || !userId) {
+    await writeCachedSettings(merged, userId);
     return merged;
   }
 
@@ -120,8 +182,11 @@ export async function updateUserSettings(
 
   if (error || !data) {
     console.error('Error saving user settings:', error);
+    await writeCachedSettings(merged, userId);
     return merged;
   }
 
-  return mapRowToSettings(data);
+  const mapped = mapRowToSettings(data);
+  await writeCachedSettings(mapped, userId);
+  return mapped;
 }
