@@ -1,50 +1,206 @@
-# Welcome to your Expo app 👋
+# Cappy Mobile (Expo + Supabase)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## What this app does
 
-## Get started
+Cappy is a medication-reminder mobile app built with Expo React Native.
 
-1. Install dependencies
+Core flows used in the assignment demo:
+
+- Guest-first app bootstrap using Supabase anonymous auth.
+- Medication create/read/update/delete backed by Supabase tables.
+- Reminder event logging (taken/snoozed metadata) to Supabase.
+- Medication photo capture/pick + upload to Supabase Storage.
+- Reminder history generated from cloud reminder events (with local fallback only when Supabase is not configured).
+
+## Prerequisites
+
+- Node.js (LTS recommended)
+- npm (this repo uses npm; `package-lock.json` is present)
+- Expo / EAS access (`npx expo ...`, `npx eas ...`)
+- Supabase cloud project (already created)
+- Optional but recommended for migrations: Supabase CLI (`npx supabase ...`)
+- For APK install/testing: Android phone or emulator
+
+## Local setup
+
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Create local env file from the template:
 
    ```bash
-   npx expo start
+   cp .env.example .env
    ```
 
-In the output, you'll find options to open the app in a
+   On Windows PowerShell:
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+   ```powershell
+   Copy-Item .env.example .env
+   ```
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+3. Fill `.env` with your Supabase values:
 
-## Get a fresh project
+   ```env
+   EXPO_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+   ```
 
-When you're ready, run:
+4. Validate required env variables:
+
+   ```bash
+   bash scripts/check-env.sh
+   ```
+
+## Environment variables
+
+The app expects only public Expo client variables:
+
+- `EXPO_PUBLIC_SUPABASE_URL`
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+
+These are read in `lib/env.ts` via `process.env.EXPO_PUBLIC_*` and used to initialize the Supabase client in `lib/supabase.ts`.
+
+Do not use service-role keys in the client app.
+
+## How Supabase is connected
+
+- `lib/supabase.ts`: creates the Supabase client when env vars are present.
+- `app/_layout.tsx`: runs `ensureAnonymousSession()` on startup.
+- `lib/auth/guestSession.ts`: obtains/creates the anonymous authenticated session.
+- `lib/api/medications.ts`: medication CRUD + status mapping.
+- `lib/api/reminderEvents.ts`: event inserts/reads + history sections.
+- `lib/storage/medicationImageUpload.ts`: uploads photos to `pill-images` bucket.
+- `lib/api/settings.ts`: per-user settings reads/writes in `user_settings`.
+
+## Supabase migrations in this repo
+
+Migration SQL files are under `supabase/migrations/`.
+
+Current folder state in this repo:
+
+- `supabase/migrations/` exists and contains SQL migrations.
+- `supabase/config.toml` is not tracked in this repository.
+
+Recommended CLI path for your existing cloud project:
+
+1. Authenticate and link:
+
+   ```bash
+   npx supabase login
+   npx supabase link --project-ref <your-project-ref>
+   ```
+
+2. Apply migrations:
+
+   ```bash
+   npx supabase db push
+   ```
+
+If CLI linking is unavailable, run migration SQL files in timestamp order in Supabase SQL Editor.
+
+## Start app locally
+
+Use real env values to avoid fallback demo mode.
 
 ```bash
-npm run reset-project
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Useful alternatives:
 
-## Learn more
+```bash
+npm run android
+npm run web
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Build Android APK with EAS (internal distribution)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+This repo is configured for internal APK builds in `eas.json` with the `preview` profile.
 
-## Join the community
+Existing Expo/EAS config that affects build behavior:
 
-Join our community of developers creating universal apps.
+- `app.json` already includes `expo.extra.eas.projectId`.
+- The project is in managed workflow (`android/` and `ios/` are not committed).
+- Expo plugins for camera/image-picker/notifications are already declared in `app.json`.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Run helper script:
+
+```bash
+bash scripts/build-preview-android.sh
+```
+
+Direct command equivalent:
+
+```bash
+npx eas build -p android --profile preview
+```
+
+After build completes, install the APK from the EAS build artifact link.
+
+## Validate backend demo flows
+
+Run these checks with env vars configured and migrations applied.
+
+1. Session bootstrap (valid auth path)
+- Launch app and wait for the startup loader to finish.
+- In Settings, confirm guest ID is shown (means session/user exists).
+
+2. Medication CRUD uses live Supabase
+- Add medication in Add tab.
+- Edit it in Medications tab.
+- Delete it in Medications tab.
+- Verify rows in Supabase table `medications` for your current `user_id`.
+
+3. Reminder event logging reaches Supabase
+- Open a reminder and tap Take Now or Snooze.
+- Verify new/updated row in `reminder_events`.
+
+4. Photo/media upload works
+- Add or edit medication with camera/gallery image.
+- Verify file appears in Storage bucket `pill-images`.
+- Verify `medications.pill_photo_url` is populated.
+
+5. History loads cloud data (not demo fallback)
+- Perform reminder actions for one or more meds.
+- Open History tab and confirm entries reflect your recent `reminder_events`.
+- Note: if Supabase env is missing, history falls back to `data/mock-medications.ts` by design.
+
+## Anonymous auth and RLS note
+
+This app depends on anonymous sign-in (`supabase.auth.signInAnonymously`) and per-user RLS policies.
+
+Make sure:
+
+- Anonymous sign-ins are enabled in Supabase Auth.
+- Latest migration `20260419120000_guest_first_anonymous_auth.sql` is applied.
+- RLS policies allow authenticated users to access only their own rows.
+
+If these are not aligned, create/update/delete or upload operations may be blocked with RLS errors.
+
+## Reproducible submission files/config
+
+Key files for this assignment submission:
+
+- `app.json`
+- `eas.json`
+- `.env.example`
+- `scripts/check-env.sh`
+- `scripts/build-preview-android.sh`
+- `lib/env.ts`
+- `lib/supabase.ts`
+- `lib/auth/guestSession.ts`
+- `lib/api/medications.ts`
+- `lib/api/reminderEvents.ts`
+- `lib/storage/medicationImageUpload.ts`
+- `supabase/migrations/*`
+
+## Manual steps
+
+The following cannot be fully completed from source code alone:
+
+- Add real Supabase env values in local `.env` and in EAS project environment variables.
+- Ensure Supabase project settings allow anonymous auth.
+- Link/apply migrations to the target Supabase cloud project.
