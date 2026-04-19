@@ -4,7 +4,7 @@
     "slug": "alaga-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/alaga-logo.png",
+    "icon": "./assets/images/cappy-logo.png",
     "scheme": "alagamobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,23 +14,43 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/alaga-logo.png",
-        "backgroundImage": "./assets/images/alaga-logo.png",
-        "monochromeImage": "./assets/images/alaga-logo.png"
+        "foregroundImage": "./assets/images/cappy-logo.png",
+        "backgroundImage": "./assets/images/cappy-logo.png",
+        "monochromeImage": "./assets/images/cappy-logo.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/alaga-logo.png"
+      "favicon": "./assets/images/cappy-logo.png"
     },
     "plugins": [
       "expo-router",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Alaga to use the camera for medication photos."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Alaga to access your photo library for medication images.",
+          "cameraPermission": "Allow Alaga to use the camera for medication photos."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/cappy-logo.png",
+          "color": "#2B6CB8"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
-          "image": "./assets/images/alaga-logo.png",
+          "image": "./assets/images/cappy-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
