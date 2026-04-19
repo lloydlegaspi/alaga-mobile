@@ -3,10 +3,12 @@ import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { ConfirmDialog } from '@/components/alaga/ConfirmDialog';
+import { useFeedback } from '@/components/alaga/FeedbackToast';
 import { ScreenContainer } from '@/components/alaga/ScreenContainer';
 import { AlagaColors } from '@/constants/alaga-theme';
 import { deleteMedicationByIdWithReason, getMedications } from '@/lib/api/medications';
-import { useFeedback } from '@/components/alaga/FeedbackToast';
+import { cancelMedicationReminderNotifications } from '@/lib/notifications/medicationReminders';
 import type { Medication } from '@/types/medication';
 
 export default function MedicationsScreen() {
@@ -15,6 +17,7 @@ export default function MedicationsScreen() {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingDeleteMedicationId, setPendingDeleteMedicationId] = useState<string | null>(null);
 
   const loadMedications = useCallback(async () => {
     setIsLoading(true);
@@ -30,58 +33,81 @@ export default function MedicationsScreen() {
   );
 
   const onEdit = (medicationId: string) => {
-    router.push(`/add?medId=${medicationId}`);
+    router.push({
+      pathname: '/(tabs)/add',
+      params: { medId: medicationId },
+    });
   };
 
-  const onDelete = (medicationId: string) => {
-    Alert.alert('Delete medication?', 'This action cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            setDeletingId(medicationId);
-            const result = await deleteMedicationByIdWithReason(medicationId);
+  const runDelete = useCallback(
+    async (medicationId: string) => {
+      try {
+        setDeletingId(medicationId);
+        const result = await deleteMedicationByIdWithReason(medicationId);
 
-            if (!result.ok) {
-              showToast(
-                result.code === '42501'
-                  ? 'Could not delete medication'
-                  : 'Delete failed',
-                'error',
-              );
-              Alert.alert(
-                'Delete failed',
-                result.code === '42501'
-                  ? 'Supabase blocked this delete with row-level security. Run the latest schema migration to apply demo delete policies.'
-                  : result.code === 'NO_ROWS_DELETED'
-                    ? 'Delete did not affect any row. This usually means RLS is filtering the row in Supabase.'
-                  : result.message ?? 'Unable to delete this medication.',
-              );
-              return;
-            }
+        if (!result.ok) {
+          showToast(
+            result.code === '42501'
+              ? 'Could not delete medication'
+              : 'Delete failed',
+            'error',
+          );
+          Alert.alert(
+            'Delete failed',
+            result.code === '42501'
+              ? 'Supabase blocked this delete with row-level security. Run the latest schema migration to apply demo delete policies.'
+              : result.code === 'NO_ROWS_DELETED'
+                ? 'Delete did not affect any row. This usually means RLS is filtering the row in Supabase.'
+                : result.message ?? 'Unable to delete this medication.',
+          );
+          return;
+        }
 
-            setMedications((current) => current.filter((item) => item.id !== medicationId));
-            showToast('Medication deleted', 'success');
-          } catch {
-            showToast('Delete failed', 'error');
-            Alert.alert('Delete failed', 'Unexpected error while deleting medication.');
-          } finally {
-            setDeletingId(null);
-          }
-        },
-      },
-    ]);
-  };
+        try {
+          await cancelMedicationReminderNotifications(medicationId);
+        } catch (error) {
+          console.warn('Reminder cleanup failed after delete:', error);
+        }
+
+        setMedications((current) => current.filter((item) => item.id !== medicationId));
+        showToast('Medication deleted', 'success');
+      } catch {
+        showToast('Delete failed', 'error');
+        Alert.alert('Delete failed', 'Unexpected error while deleting medication.');
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [showToast],
+  );
+
+  const onDelete = useCallback(
+    (medicationId: string) => {
+      setPendingDeleteMedicationId(medicationId);
+    },
+    [],
+  );
+
+  const closeDeleteDialog = useCallback(() => {
+    if (!deletingId) {
+      setPendingDeleteMedicationId(null);
+    }
+  }, [deletingId]);
+
+  const confirmDelete = useCallback(() => {
+    if (!pendingDeleteMedicationId || deletingId) {
+      return;
+    }
+
+    const targetId = pendingDeleteMedicationId;
+    setPendingDeleteMedicationId(null);
+    void runDelete(targetId);
+  }, [deletingId, pendingDeleteMedicationId, runDelete]);
 
   return (
     <ScreenContainer>
       <View style={styles.header}>
         <Text style={styles.title}>Medications</Text>
-        <Pressable style={styles.addButton} onPress={() => router.push('/add')}>
-          <Text style={styles.addButtonText}>+ Add</Text>
-        </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -119,6 +145,17 @@ export default function MedicationsScreen() {
           </View>
         ))}
       </ScrollView>
+
+      <ConfirmDialog
+        visible={Boolean(pendingDeleteMedicationId)}
+        title="Delete medication?"
+        message="This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isConfirming={Boolean(deletingId && deletingId === pendingDeleteMedicationId)}
+        onCancel={closeDeleteDialog}
+        onConfirm={confirmDelete}
+      />
     </ScreenContainer>
   );
 }
@@ -133,28 +170,12 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
   },
   title: {
     fontSize: 28,
     fontWeight: '800',
     color: AlagaColors.textPrimary,
-  },
-  addButton: {
-    minHeight: 40,
-    minWidth: 72,
-    borderRadius: 14,
-    backgroundColor: '#EBF3FB',
-    borderWidth: 1,
-    borderColor: '#D8E6F4',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-  },
-  addButtonText: {
-    color: AlagaColors.accentBlue,
-    fontSize: 15,
-    fontWeight: '700',
   },
   content: {
     padding: 20,

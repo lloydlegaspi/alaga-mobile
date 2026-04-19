@@ -52,7 +52,33 @@ function statusIconColor(status: Medication['status']) {
   }
 }
 
+function emotionLabel(emotionState?: Medication['emotionState']) {
+  switch (emotionState) {
+    case 'confused':
+      return 'Confused';
+    case 'stressed':
+      return 'Stressed';
+    case 'calm':
+      return 'Calm';
+    default:
+      return null;
+  }
+}
+
+function emotionBadgeStyle(emotionState?: Medication['emotionState']) {
+  switch (emotionState) {
+    case 'confused':
+      return { backgroundColor: AlagaColors.warningBg, color: AlagaColors.warning };
+    case 'stressed':
+      return { backgroundColor: AlagaColors.dangerBg, color: AlagaColors.danger };
+    default:
+      return { backgroundColor: AlagaColors.successBg, color: AlagaColors.success };
+  }
+}
+
 export function MedicationCard({ medication, variant, onPress }: MedicationCardProps) {
+  const displayEmotion = emotionLabel(medication.emotionState);
+
   if (variant === 'due-now') {
     return (
       <Pressable
@@ -95,6 +121,11 @@ export function MedicationCard({ medication, variant, onPress }: MedicationCardP
         <Text style={styles.historyTitle}>{medication.name}</Text>
         <Text style={styles.time}>{medication.time}</Text>
         <Text style={styles.subtitleMuted}>{medication.dosage}</Text>
+        {displayEmotion ? (
+          <View style={[styles.emotionBadge, { backgroundColor: emotionBadgeStyle(medication.emotionState).backgroundColor }]}>
+            <Text style={[styles.emotionText, { color: emotionBadgeStyle(medication.emotionState).color }]}>Mood: {displayEmotion}</Text>
+          </View>
+        ) : null}
       </View>
       <View style={styles.rightStack}>
         <Ionicons name={statusIconName(medication.status)} size={22} color={statusIconColor(medication.status)} />
@@ -211,6 +242,20 @@ const styles = StyleSheet.create({
   subtitleMuted: {
     color: AlagaColors.textMuted,
     fontSize: 13,
+  },
+  emotionBadge: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 99,
+    borderWidth: 1,
+    borderColor: 'rgba(26,58,107,0.08)',
+  },
+  emotionText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   pressed: {
     opacity: 0.92,

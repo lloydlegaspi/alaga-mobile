@@ -1,21 +1,36 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Alert,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from 'react-native';
 
+import { useFeedback } from '@/components/alaga/FeedbackToast';
 import { ScreenContainer } from '@/components/alaga/ScreenContainer';
 import { ScreenHeader } from '@/components/alaga/ScreenHeader';
 import { AlagaColors } from '@/constants/alaga-theme';
-import { createMedication, deleteMedicationByIdWithReason, getMedicationByIdRaw, updateMedicationById } from '@/lib/api/medications';
-import { useFeedback } from '@/components/alaga/FeedbackToast';
+import {
+    createMedication,
+    deleteMedicationByIdWithReason,
+    getMedicationByIdRaw,
+    updateMedicationById,
+} from '@/lib/api/medications';
+import {
+    chooseMedicationPhotoFromLibrary,
+    takeMedicationPhoto,
+} from '@/lib/media/medicationImagePicker';
+import {
+    cancelMedicationReminderNotifications,
+    scheduleMedicationReminderNotifications,
+} from '@/lib/notifications/medicationReminders';
+import { uploadMedicationImage } from '@/lib/storage/medicationImageUpload';
 
 const frequencies = ['Every day', 'Morning only', 'Afternoon only', 'Evening only'] as const;
 const frequencyToSchema: Record<(typeof frequencies)[number], string> = {
@@ -31,8 +46,6 @@ const schemaToFrequency: Record<string, (typeof frequencies)[number]> = {
   'Evening only': 'Evening only',
 };
 
-const defaultPhotoUrl = 'https://images.unsplash.com/photo-1740592756330-adb8c1f5fbe7?w=500&h=500&fit=crop';
-
 export default function AddMedicationScreen() {
   const router = useRouter();
   const { showToast } = useFeedback();
@@ -44,13 +57,20 @@ export default function AddMedicationScreen() {
   const [purpose, setPurpose] = useState('');
   const [time, setTime] = useState('8:00 AM');
   const [frequency, setFrequency] = useState<(typeof frequencies)[number]>('Every day');
-  const [photoAdded, setPhotoAdded] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
+  const [photoPreviewUri, setPhotoPreviewUri] = useState<string | null>(null);
+  const [pendingPhotoUri, setPendingPhotoUri] = useState<string | null>(null);
+  const [photoRemoved, setPhotoRemoved] = useState(false);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
-  const formTitle = useMemo(() => (isEditMode ? 'Edit Medication' : 'Add Medication'), [isEditMode]);
+  const formTitle = useMemo(
+    () => (isEditMode ? 'Edit Medication' : 'Add Medication'),
+    [isEditMode],
+  );
+  const isFormLocked = isSaving || isLoadingForm || isDeleting || isUploadingPhoto;
 
   useEffect(() => {
     let isActive = true;
@@ -78,8 +98,12 @@ export default function AddMedicationScreen() {
       setPurpose(record.purpose ?? '');
       setTime(record.time);
       setFrequency(schemaToFrequency[record.frequency ?? 'Once daily'] ?? 'Every day');
-      setPhotoUrl(record.pillPhotoUrl ?? null);
-      setPhotoAdded(Boolean(record.pillPhotoUrl));
+
+      const loadedPhoto = record.pillPhotoUrl ?? null;
+      setExistingPhotoUrl(loadedPhoto);
+      setPhotoPreviewUri(loadedPhoto);
+      setPendingPhotoUri(null);
+      setPhotoRemoved(false);
       setIsLoadingForm(false);
     }
 
@@ -90,38 +114,144 @@ export default function AddMedicationScreen() {
     };
   }, [params.medId, router]);
 
+  const applySelectedPhoto = (uri: string) => {
+    setPhotoPreviewUri(uri);
+    setPendingPhotoUri(uri);
+    setPhotoRemoved(false);
+  };
+
+  const handleTakePhoto = async () => {
+    const result = await takeMedicationPhoto();
+
+    if (result.type === 'success') {
+      applySelectedPhoto(result.uri);
+      return;
+    }
+
+    if (result.type === 'permission-denied') {
+      showToast('Camera permission needed', 'error');
+      Alert.alert('Permission needed', result.message);
+      return;
+    }
+
+    if (result.type === 'error') {
+      showToast('Could not open camera', 'error');
+      Alert.alert('Camera error', result.message);
+    }
+  };
+
+  const handleChooseFromGallery = async () => {
+    const result = await chooseMedicationPhotoFromLibrary();
+
+    if (result.type === 'success') {
+      applySelectedPhoto(result.uri);
+      return;
+    }
+
+    if (result.type === 'permission-denied') {
+      showToast('Photo permission needed', 'error');
+      Alert.alert('Permission needed', result.message);
+      return;
+    }
+
+    if (result.type === 'error') {
+      showToast('Could not open photo library', 'error');
+      Alert.alert('Photo picker error', result.message);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoPreviewUri(null);
+    setPendingPhotoUri(null);
+    setPhotoRemoved(true);
+  };
+
   const saveMedication = async () => {
     if (!name.trim() || !dosage.trim() || !time.trim()) {
-      Alert.alert('Missing details', 'Please enter the medication name, dosage, and time.');
+      Alert.alert(
+        'Missing details',
+        'Please enter the medication name, dosage, and time.',
+      );
       return;
     }
 
     setIsSaving(true);
+
+    let finalPhotoUrl = existingPhotoUrl;
+
+    if (pendingPhotoUri) {
+      setIsUploadingPhoto(true);
+      const uploadedImage = await uploadMedicationImage(pendingPhotoUri);
+      setIsUploadingPhoto(false);
+
+      if (!uploadedImage) {
+        setIsSaving(false);
+        showToast('Could not upload photo', 'error');
+        Alert.alert(
+          'Upload failed',
+          'The photo could not be uploaded. Please try again.',
+        );
+        return;
+      }
+
+      finalPhotoUrl = uploadedImage.publicUrl;
+    } else if (photoRemoved) {
+      finalPhotoUrl = null;
+    }
+
     const payload = {
       name: name.trim(),
       dosage: dosage.trim(),
       purpose: purpose.trim() || null,
       time_of_day: time.trim(),
       frequency: frequencyToSchema[frequency],
-      pill_photo_url: photoAdded ? photoUrl ?? defaultPhotoUrl : null,
+      pill_photo_url: finalPhotoUrl,
     };
 
-    const record = isEditMode && params.medId
-      ? await updateMedicationById(params.medId, payload)
-      : await createMedication(payload);
-
-    setIsSaving(false);
+    const record =
+      isEditMode && params.medId
+        ? await updateMedicationById(params.medId, payload)
+        : await createMedication(payload);
 
     if (!record) {
+      setIsSaving(false);
       showToast('Could not save medication', 'error');
-      Alert.alert('Save failed', 'The medication was not saved. Please verify Supabase policies and try again.');
+      Alert.alert(
+        'Save failed',
+        'The medication was not saved. Please verify Supabase policies and try again.',
+      );
       return;
     }
 
+    const notificationResult = await scheduleMedicationReminderNotifications({
+      id: record.id,
+      name: record.name,
+      time: record.time,
+    });
+
+    if (!notificationResult.ok) {
+      showToast(
+        notificationResult.reason === 'permission-denied'
+          ? 'Medication saved, reminders are off'
+          : 'Medication saved but reminder was not scheduled',
+        notificationResult.reason === 'schedule-error' ? 'error' : 'info',
+      );
+    }
+
+    setIsSaving(false);
+    setExistingPhotoUrl(finalPhotoUrl);
+    setPhotoPreviewUri(finalPhotoUrl);
+    setPendingPhotoUri(null);
+    setPhotoRemoved(false);
+
     showToast(isEditMode ? 'Medication updated' : 'Medication added', 'success');
-    Alert.alert(isEditMode ? 'Medication Updated' : 'Medication Saved', isEditMode ? 'Changes have been saved.' : 'Your medication has been added to the schedule.', [
-      { text: 'OK', onPress: () => router.replace('/') },
-    ]);
+    Alert.alert(
+      isEditMode ? 'Medication Updated' : 'Medication Saved',
+      isEditMode
+        ? 'Changes have been saved.'
+        : 'Your medication has been added to the schedule.',
+      [{ text: 'OK', onPress: () => router.replace('/') }],
+    );
   };
 
   const confirmDelete = () => {
@@ -150,6 +280,12 @@ export default function AddMedicationScreen() {
               return;
             }
 
+            try {
+              await cancelMedicationReminderNotifications(params.medId as string);
+            } catch (error) {
+              console.warn('Reminder cleanup failed after delete:', error);
+            }
+
             showToast('Medication deleted', 'success');
             Alert.alert('Deleted', 'Medication removed.', [
               { text: 'OK', onPress: () => router.replace('/') },
@@ -167,13 +303,15 @@ export default function AddMedicationScreen() {
 
   return (
     <ScreenContainer backgroundColor="#F0F4FB">
-      <ScreenHeader title={formTitle} />
+      <ScreenHeader title={formTitle} onBack={() => router.back()} />
 
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled">
-        {isLoadingForm ? <Text style={styles.loadingText}>Loading medication details...</Text> : null}
+        {isLoadingForm ? (
+          <Text style={styles.loadingText}>Loading medication details...</Text>
+        ) : null}
 
         <FieldLabel text="Medication Name" />
         <TextInput
@@ -203,7 +341,11 @@ export default function AddMedicationScreen() {
         />
 
         <FieldLabel text="Time" />
-        <TextInput value={time} onChangeText={setTime} style={[styles.input, styles.inputActive]} />
+        <TextInput
+          value={time}
+          onChangeText={setTime}
+          style={[styles.input, styles.inputActive]}
+        />
 
         <FieldLabel text="Frequency" />
         <View style={styles.frequencyGrid}>
@@ -215,30 +357,84 @@ export default function AddMedicationScreen() {
                 onPress={() => setFrequency(item)}
                 style={[styles.frequencyButton, selected && styles.frequencyButtonActive]}>
                 {selected ? (
-                  <Ionicons name="checkmark" size={16} color={AlagaColors.accentBlue} style={styles.freqIcon} />
+                  <Ionicons
+                    name="checkmark"
+                    size={16}
+                    color={AlagaColors.accentBlue}
+                    style={styles.freqIcon}
+                  />
                 ) : null}
-                <Text style={[styles.frequencyText, selected && styles.frequencyTextActive]}>{item}</Text>
+                <Text style={[styles.frequencyText, selected && styles.frequencyTextActive]}>
+                  {item}
+                </Text>
               </Pressable>
             );
           })}
         </View>
 
         <FieldLabel text="Pill Photo" />
-        <Pressable style={[styles.photoButton, photoAdded && styles.photoButtonDone]} onPress={() => setPhotoAdded((prev) => !prev)}>
-          <Ionicons
-            name={photoAdded ? 'checkmark-circle' : 'camera'}
-            size={22}
-            color={photoAdded ? AlagaColors.success : AlagaColors.accentBlue}
-          />
-          <Text style={[styles.photoText, photoAdded && styles.photoTextDone]}>
-            {photoAdded ? 'Photo Added' : 'Take Pill Photo'}
+        <View style={styles.photoSection}>
+          <View style={styles.photoPreviewWrap}>
+            {photoPreviewUri ? (
+              <Image
+                source={{ uri: photoPreviewUri }}
+                style={styles.photoPreviewImage}
+                contentFit="cover"
+              />
+            ) : (
+              <View style={styles.photoPlaceholderWrap}>
+                <Ionicons name="image-outline" size={28} color="#8AA0BF" />
+                <Text style={styles.photoPlaceholderText}>No photo selected</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.photoActionsRow}>
+            <Pressable
+              style={[styles.photoActionButton, isFormLocked && styles.photoActionButtonDisabled]}
+              onPress={handleTakePhoto}
+              disabled={isFormLocked}>
+              <Ionicons name="camera-outline" size={18} color={AlagaColors.accentBlue} />
+              <Text style={styles.photoActionButtonText}>Take Photo</Text>
+            </Pressable>
+
+            <Pressable
+              style={[styles.photoActionButton, isFormLocked && styles.photoActionButtonDisabled]}
+              onPress={handleChooseFromGallery}
+              disabled={isFormLocked}>
+              <Ionicons name="images-outline" size={18} color={AlagaColors.accentBlue} />
+              <Text style={styles.photoActionButtonText}>Choose from Gallery</Text>
+            </Pressable>
+          </View>
+
+          {photoPreviewUri ? (
+            <Pressable
+              style={[styles.photoRemoveButton, isFormLocked && styles.photoActionButtonDisabled]}
+              onPress={handleRemovePhoto}
+              disabled={isFormLocked}>
+              <Ionicons name="trash-outline" size={17} color="#C0392B" />
+              <Text style={styles.photoRemoveButtonText}>Remove Photo</Text>
+            </Pressable>
+          ) : null}
+        </View>
+
+        <Text style={styles.helpText}>
+          {isUploadingPhoto
+            ? 'Uploading photo...'
+            : 'A photo makes it easier to recognize your medication.'}
+        </Text>
+
+        <Pressable
+          style={styles.primaryButton}
+          onPress={saveMedication}
+          disabled={isFormLocked}>
+          <Text style={styles.primaryButtonText}>
+            {isSaving || isUploadingPhoto
+              ? 'Saving...'
+              : isEditMode
+                ? 'Update Medication'
+                : 'Save Medication'}
           </Text>
-        </Pressable>
-
-        <Text style={styles.helpText}>A photo makes it easier to recognize your medication.</Text>
-
-        <Pressable style={styles.primaryButton} onPress={saveMedication} disabled={isSaving || isLoadingForm || isDeleting}>
-          <Text style={styles.primaryButtonText}>{isSaving ? 'Saving...' : isEditMode ? 'Update Medication' : 'Save Medication'}</Text>
         </Pressable>
 
         {isEditMode ? (
@@ -246,8 +442,10 @@ export default function AddMedicationScreen() {
             style={styles.deleteButton}
             onPress={confirmDelete}
             hitSlop={8}
-            disabled={isSaving || isLoadingForm || isDeleting}>
-            <Text style={styles.deleteButtonText}>{isDeleting ? 'Deleting...' : 'Delete Medication'}</Text>
+            disabled={isFormLocked}>
+            <Text style={styles.deleteButtonText}>
+              {isDeleting ? 'Deleting...' : 'Delete Medication'}
+            </Text>
           </Pressable>
         ) : null}
 
@@ -329,29 +527,76 @@ const styles = StyleSheet.create({
     color: AlagaColors.accentBlue,
     fontWeight: '700',
   },
-  photoButton: {
-    minHeight: 64,
+  photoSection: {
+    marginBottom: 2,
+  },
+  photoPreviewWrap: {
+    minHeight: 170,
     borderRadius: 18,
-    borderWidth: 2.5,
-    borderStyle: 'dashed',
-    borderColor: AlagaColors.accentBlue,
-    backgroundColor: '#EBF3FB',
-    flexDirection: 'row',
+    borderWidth: 2,
+    borderColor: '#D4E0F0',
+    overflow: 'hidden',
+    backgroundColor: '#F8FBFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  photoPreviewImage: {
+    width: '100%',
+    height: 170,
+  },
+  photoPlaceholderWrap: {
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    paddingHorizontal: 14,
   },
-  photoButtonDone: {
-    borderColor: '#4CAF7A',
-    backgroundColor: '#E6F5EC',
+  photoPlaceholderText: {
+    color: '#8AA0BF',
+    fontSize: 14,
+    fontWeight: '600',
   },
-  photoText: {
-    fontSize: 18,
+  photoActionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 10,
+  },
+  photoActionButton: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#D8E6F4',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 10,
+  },
+  photoActionButtonDisabled: {
+    opacity: 0.6,
+  },
+  photoActionButtonText: {
+    fontSize: 14,
     fontWeight: '700',
     color: AlagaColors.accentBlue,
   },
-  photoTextDone: {
-    color: AlagaColors.success,
+  photoRemoveButton: {
+    minHeight: 46,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#F6CACA',
+    backgroundColor: '#FDECEA',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 10,
+  },
+  photoRemoveButtonText: {
+    color: '#C0392B',
+    fontSize: 14,
+    fontWeight: '700',
   },
   helpText: {
     color: '#8A9BBB',
