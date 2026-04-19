@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { ScreenContainer } from '@/components/alaga/ScreenContainer';
-import { AlagaColors } from '@/constants/alaga-theme';
+import { ScreenContainer } from '@/components/cappy/ScreenContainer';
+import { CappyColors } from '@/constants/cappy-theme';
 
 type ChatRole = 'cappy' | 'user';
 
@@ -91,7 +91,7 @@ export default function AskScreen() {
           value={draft}
           onChangeText={setDraft}
           placeholder="Type a message to Cappy"
-          placeholderTextColor={AlagaColors.textMuted}
+          placeholderTextColor={CappyColors.textMuted}
           style={styles.input}
           returnKeyType="send"
           onSubmitEditing={sendMessage}
@@ -111,9 +111,9 @@ export default function AskScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: AlagaColors.surface,
+    backgroundColor: CappyColors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: AlagaColors.border,
+    borderBottomColor: CappyColors.border,
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 12,
@@ -128,11 +128,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
   },
   subtitle: {
     marginTop: 4,
-    color: AlagaColors.textSecondary,
+    color: CappyColors.textSecondary,
     fontSize: 14,
     lineHeight: 20,
   },
@@ -167,22 +167,22 @@ const styles = StyleSheet.create({
     borderColor: '#D8E6F4',
   },
   userBubble: {
-    backgroundColor: AlagaColors.accentBlue,
+    backgroundColor: CappyColors.accentBlue,
   },
   bubbleText: {
     fontSize: 15,
     lineHeight: 21,
   },
   cappyBubbleText: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
   },
   userBubbleText: {
     color: '#FFFFFF',
   },
   inputWrap: {
     borderTopWidth: 1,
-    borderTopColor: AlagaColors.border,
-    backgroundColor: AlagaColors.surface,
+    borderTopColor: CappyColors.border,
+    backgroundColor: CappyColors.surface,
     paddingHorizontal: 14,
     paddingVertical: 10,
     flexDirection: 'row',
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#D8E6F4',
     backgroundColor: '#FFFFFF',
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     paddingHorizontal: 12,
     fontSize: 15,
   },
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: AlagaColors.accentBlue,
+    backgroundColor: CappyColors.accentBlue,
   },
   sendButtonDisabled: {
     opacity: 0.45,

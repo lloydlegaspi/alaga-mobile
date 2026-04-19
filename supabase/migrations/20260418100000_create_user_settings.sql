@@ -1,4 +1,4 @@
--- Add a singleton settings record for app-level preferences used by alaga-mobile.
+-- Add a singleton settings record for app-level preferences used by cappy-mobile.
 
 CREATE TABLE IF NOT EXISTS user_settings (
   id TEXT PRIMARY KEY DEFAULT 'default',

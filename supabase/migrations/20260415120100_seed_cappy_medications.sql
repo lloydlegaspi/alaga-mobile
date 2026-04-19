@@ -1,4 +1,4 @@
--- Seed medication data for Alaga demo
+-- Seed medication data for Cappy demo
 
 INSERT INTO medications (name, dosage, purpose, time_of_day, frequency, pill_photo_url)
 SELECT *

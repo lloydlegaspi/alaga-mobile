@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AlagaColors } from '@/constants/alaga-theme';
+import { CappyColors } from '@/constants/cappy-theme';
 import type { Medication } from '@/types/medication';
 import { StatusBadge } from './StatusBadge';
 
@@ -36,15 +36,15 @@ function statusIconName(status: Medication['status']): keyof typeof Ionicons.gly
 function statusIconColor(status: Medication['status']) {
   switch (status) {
     case 'Taken':
-      return AlagaColors.success;
+      return CappyColors.success;
     case 'Snoozed':
-      return AlagaColors.accentBlue;
+      return CappyColors.accentBlue;
     case 'Pending':
       return '#667085';
     case 'Missed':
-      return AlagaColors.danger;
+      return CappyColors.danger;
     case 'Not Yet':
-      return AlagaColors.warning;
+      return CappyColors.warning;
     case 'Later':
       return '#4E93DA';
     default:
@@ -68,11 +68,11 @@ function emotionLabel(emotionState?: Medication['emotionState']) {
 function emotionBadgeStyle(emotionState?: Medication['emotionState']) {
   switch (emotionState) {
     case 'confused':
-      return { backgroundColor: AlagaColors.warningBg, color: AlagaColors.warning };
+      return { backgroundColor: CappyColors.warningBg, color: CappyColors.warning };
     case 'stressed':
-      return { backgroundColor: AlagaColors.dangerBg, color: AlagaColors.danger };
+      return { backgroundColor: CappyColors.dangerBg, color: CappyColors.danger };
     default:
-      return { backgroundColor: AlagaColors.successBg, color: AlagaColors.success };
+      return { backgroundColor: CappyColors.successBg, color: CappyColors.success };
   }
 }
 
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 20,
-    backgroundColor: AlagaColors.surface,
+    backgroundColor: CappyColors.surface,
     borderWidth: 1.5,
     borderColor: '#E0ECF9',
     padding: 14,
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 18,
-    backgroundColor: AlagaColors.surface,
+    backgroundColor: CappyColors.surface,
     borderWidth: 1,
     borderColor: '#EDE8E1',
     padding: 12,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 18,
-    backgroundColor: AlagaColors.surface,
+    backgroundColor: CappyColors.surface,
     borderWidth: 1,
     borderColor: '#EDE8E1',
     padding: 12,
@@ -210,37 +210,37 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   time: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 14,
     fontWeight: '700',
   },
   timeSmall: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 13,
     fontWeight: '700',
   },
   dueTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 20,
     fontWeight: '800',
     lineHeight: 24,
   },
   laterTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 16,
     fontWeight: '700',
   },
   historyTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 17,
     fontWeight: '700',
   },
   subtitle: {
-    color: AlagaColors.textSecondary,
+    color: CappyColors.textSecondary,
     fontSize: 14,
   },
   subtitleMuted: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 13,
   },
   emotionBadge: {

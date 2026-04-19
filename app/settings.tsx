@@ -12,10 +12,10 @@ import {
     View,
 } from 'react-native';
 
-import { useFeedback } from '@/components/alaga/FeedbackToast';
-import { ScreenContainer } from '@/components/alaga/ScreenContainer';
-import { ScreenHeader } from '@/components/alaga/ScreenHeader';
-import { AlagaColors } from '@/constants/alaga-theme';
+import { useFeedback } from '@/components/cappy/FeedbackToast';
+import { ScreenContainer } from '@/components/cappy/ScreenContainer';
+import { ScreenHeader } from '@/components/cappy/ScreenHeader';
+import { CappyColors } from '@/constants/cappy-theme';
 import { getUserSettings, updateUserSettings } from '@/lib/api/settings';
 import { getAuthenticatedUserId, toShortGuestId } from '@/lib/auth/guestSession';
 import {
@@ -102,7 +102,7 @@ export default function SettingsScreen() {
           value={form.displayName}
           onChangeText={(value) => setForm((current) => ({ ...current, displayName: value }))}
           placeholder="Your name"
-          placeholderTextColor={AlagaColors.textMuted}
+          placeholderTextColor={CappyColors.textMuted}
           style={styles.nameInput}
           autoCapitalize="words"
           maxLength={50}
@@ -121,7 +121,7 @@ export default function SettingsScreen() {
               setForm((current) => ({ ...current, caregiverName: value }))
             }
             placeholder="e.g. Maria Santos"
-            placeholderTextColor={AlagaColors.textMuted}
+            placeholderTextColor={CappyColors.textMuted}
             style={styles.caregiverInput}
             autoCapitalize="words"
             maxLength={80}
@@ -134,7 +134,7 @@ export default function SettingsScreen() {
               setForm((current) => ({ ...current, caregiverPhone: value }))
             }
             placeholder="e.g. +63 912 345 6789"
-            placeholderTextColor={AlagaColors.textMuted}
+            placeholderTextColor={CappyColors.textMuted}
             style={styles.caregiverInput}
             keyboardType="phone-pad"
             maxLength={24}
@@ -164,7 +164,7 @@ export default function SettingsScreen() {
             value={form.highContrast}
             onValueChange={(value) => setForm((current) => ({ ...current, highContrast: value }))}
             thumbColor="#FFFFFF"
-            trackColor={{ false: '#D0C9C0', true: AlagaColors.accentBlue }}
+            trackColor={{ false: '#D0C9C0', true: CappyColors.accentBlue }}
           />
         </SettingsRow>
 
@@ -256,12 +256,12 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
   },
   loadingText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
     marginBottom: 12,
   },
   label: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 17,
     fontWeight: '700',
     marginBottom: 8,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#D4E0F0',
     backgroundColor: '#FFFFFF',
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 17,
     paddingHorizontal: 14,
     marginBottom: 12,
@@ -287,18 +287,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   caregiverTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 4,
   },
   caregiverDescription: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 13,
     marginBottom: 10,
   },
   caregiverLabel: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 6,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#D4E0F0',
     backgroundColor: '#FFFFFF',
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 16,
     paddingHorizontal: 12,
     marginBottom: 10,
@@ -330,13 +330,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rowLabel: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 16,
     fontWeight: '700',
   },
   rowDescription: {
     marginTop: 3,
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 13,
   },
   rowControl: {
@@ -360,12 +360,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   segmentText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
     fontWeight: '600',
   },
   segmentTextActive: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontWeight: '700',
   },
   actions: {
@@ -385,19 +385,19 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   guestTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 2,
   },
   guestSubtitle: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 12,
   },
   primaryButton: {
     minHeight: 54,
     borderRadius: 18,
-    backgroundColor: AlagaColors.accentBlue,
+    backgroundColor: CappyColors.accentBlue,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 16,
     fontWeight: '700',
   },

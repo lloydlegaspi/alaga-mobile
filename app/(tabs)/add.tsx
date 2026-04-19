@@ -12,10 +12,10 @@ import {
     View,
 } from 'react-native';
 
-import { useFeedback } from '@/components/alaga/FeedbackToast';
-import { ScreenContainer } from '@/components/alaga/ScreenContainer';
-import { ScreenHeader } from '@/components/alaga/ScreenHeader';
-import { AlagaColors } from '@/constants/alaga-theme';
+import { useFeedback } from '@/components/cappy/FeedbackToast';
+import { ScreenContainer } from '@/components/cappy/ScreenContainer';
+import { ScreenHeader } from '@/components/cappy/ScreenHeader';
+import { CappyColors } from '@/constants/cappy-theme';
 import {
     createMedication,
     deleteMedicationByIdWithReason,
@@ -414,7 +414,7 @@ export default function AddMedicationScreen() {
                   <Ionicons
                     name="checkmark"
                     size={16}
-                    color={AlagaColors.accentBlue}
+                    color={CappyColors.accentBlue}
                     style={styles.freqIcon}
                   />
                 ) : null}
@@ -448,7 +448,7 @@ export default function AddMedicationScreen() {
               style={[styles.photoActionButton, isFormLocked && styles.photoActionButtonDisabled]}
               onPress={handleTakePhoto}
               disabled={isFormLocked}>
-              <Ionicons name="camera-outline" size={18} color={AlagaColors.accentBlue} />
+              <Ionicons name="camera-outline" size={18} color={CappyColors.accentBlue} />
               <Text style={styles.photoActionButtonText}>Take Photo</Text>
             </Pressable>
 
@@ -456,7 +456,7 @@ export default function AddMedicationScreen() {
               style={[styles.photoActionButton, isFormLocked && styles.photoActionButtonDisabled]}
               onPress={handleChooseFromGallery}
               disabled={isFormLocked}>
-              <Ionicons name="images-outline" size={18} color={AlagaColors.accentBlue} />
+              <Ionicons name="images-outline" size={18} color={CappyColors.accentBlue} />
               <Text style={styles.photoActionButtonText}>Choose from Gallery</Text>
             </Pressable>
           </View>
@@ -522,12 +522,12 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   loadingText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
     marginBottom: 10,
   },
   label: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 10,
@@ -539,13 +539,13 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
     borderColor: '#D4E0F0',
     backgroundColor: '#FFFFFF',
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 18,
     paddingHorizontal: 16,
     marginBottom: 8,
   },
   inputActive: {
-    borderColor: AlagaColors.accentBlue,
+    borderColor: CappyColors.accentBlue,
   },
   frequencyGrid: {
     flexDirection: 'row',
@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   frequencyButtonActive: {
-    borderColor: AlagaColors.accentBlue,
+    borderColor: CappyColors.accentBlue,
     backgroundColor: '#EBF3FB',
   },
   freqIcon: {
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   frequencyTextActive: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontWeight: '700',
   },
   photoSection: {
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
   photoActionButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
   },
   photoRemoveButton: {
     minHeight: 46,

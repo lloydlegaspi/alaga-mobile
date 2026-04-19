@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { BottomNav } from '@/components/alaga/BottomNav';
+import { BottomNav } from '@/components/cappy/BottomNav';
 
 export default function TabLayout() {
   return (

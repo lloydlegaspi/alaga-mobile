@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AlagaColors } from '@/constants/alaga-theme';
+import { CappyColors } from '@/constants/cappy-theme';
 import type { EmotionState } from '@/types/supabase';
 
 interface EmotionCheckInProps {
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   title: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 10,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   optionButtonSelected: {
-    borderColor: AlagaColors.accentBlue,
+    borderColor: CappyColors.accentBlue,
     backgroundColor: '#EAF3FE',
   },
   optionButtonPressed: {
@@ -90,6 +90,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   optionTextSelected: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
   },
 });

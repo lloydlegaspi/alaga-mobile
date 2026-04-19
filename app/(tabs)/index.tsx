@@ -4,10 +4,10 @@ import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { MedicationCard } from '@/components/alaga/MedicationCard';
-import { ScreenContainer } from '@/components/alaga/ScreenContainer';
-import { SectionHeader } from '@/components/alaga/SectionHeader';
-import { AlagaColors } from '@/constants/alaga-theme';
+import { MedicationCard } from '@/components/cappy/MedicationCard';
+import { ScreenContainer } from '@/components/cappy/ScreenContainer';
+import { SectionHeader } from '@/components/cappy/SectionHeader';
+import { CappyColors } from '@/constants/cappy-theme';
 import { getMedications } from '@/lib/api/medications';
 import { getUserSettings } from '@/lib/api/settings';
 import type { Medication } from '@/types/medication';
@@ -135,7 +135,7 @@ export default function HomeScreen() {
           <View>
             <SectionHeader title="Up Next" />
             <View style={styles.supportCard}>
-              <Ionicons name="sparkles-outline" size={18} color={AlagaColors.accentBlue} style={styles.supportIcon} />
+              <Ionicons name="sparkles-outline" size={18} color={CappyColors.accentBlue} style={styles.supportIcon} />
               <View style={styles.supportTextWrap}>
                 <Text style={styles.supportTitle}>You are all set after this</Text>
                 <Text style={styles.supportText}>Cappy will remind you if anything else is due later today.</Text>
@@ -157,7 +157,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: AlagaColors.surface,
+    backgroundColor: CappyColors.surface,
     paddingTop: 10,
     paddingBottom: 9,
     paddingHorizontal: 16,
@@ -165,13 +165,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: AlagaColors.border,
+    borderBottomColor: CappyColors.border,
   },
   logoText: {
     flex: 1,
     fontSize: 23,
     fontWeight: '700',
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     letterSpacing: 0.2,
     marginRight: 10,
   },
@@ -202,13 +202,13 @@ const styles = StyleSheet.create({
   },
   greeting: {
     flex: 1,
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 27,
     fontWeight: '800',
   },
   helperText: {
     marginTop: 4,
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     height: 76,
   },
   loadingText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
     marginBottom: 12,
   },
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: AlagaColors.border,
+    backgroundColor: CappyColors.border,
     marginVertical: 12,
   },
   supportCard: {
@@ -250,13 +250,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   supportTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 3,
   },
   supportText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -270,13 +270,13 @@ const styles = StyleSheet.create({
     borderColor: '#EDE8E1',
   },
   emptyTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 6,
   },
   emptyText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
     lineHeight: 20,
   },

@@ -3,10 +3,10 @@ import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { ConfirmDialog } from '@/components/alaga/ConfirmDialog';
-import { useFeedback } from '@/components/alaga/FeedbackToast';
-import { ScreenContainer } from '@/components/alaga/ScreenContainer';
-import { AlagaColors } from '@/constants/alaga-theme';
+import { ConfirmDialog } from '@/components/cappy/ConfirmDialog';
+import { useFeedback } from '@/components/cappy/FeedbackToast';
+import { ScreenContainer } from '@/components/cappy/ScreenContainer';
+import { CappyColors } from '@/constants/cappy-theme';
 import { deleteMedicationByIdWithReason, getMedications } from '@/lib/api/medications';
 import { cancelMedicationReminderNotifications } from '@/lib/notifications/medicationReminders';
 import type { Medication } from '@/types/medication';
@@ -162,9 +162,9 @@ export default function MedicationsScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: AlagaColors.surface,
+    backgroundColor: CappyColors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: AlagaColors.border,
+    borderBottomColor: CappyColors.border,
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 12,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
   },
   content: {
     padding: 20,
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   loadingText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
     marginBottom: 8,
   },
@@ -195,13 +195,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   emptyTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 4,
   },
   emptyText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
   },
   card: {
@@ -218,19 +218,19 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   name: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 19,
     fontWeight: '800',
     flex: 1,
     marginRight: 8,
   },
   time: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 13,
     fontWeight: '700',
   },
   meta: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 13,
     marginBottom: 2,
   },
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   editButtonText: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 15,
     fontWeight: '700',
   },

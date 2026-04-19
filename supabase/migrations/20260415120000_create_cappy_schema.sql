@@ -1,4 +1,4 @@
--- Alaga Mobile schema baseline
+-- Cappy Mobile schema baseline
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 

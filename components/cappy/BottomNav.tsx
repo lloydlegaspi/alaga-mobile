@@ -3,7 +3,7 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AlagaColors } from '@/constants/alaga-theme';
+import { CappyColors } from '@/constants/cappy-theme';
 
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   index: 'home-outline',
@@ -78,7 +78,7 @@ export function BottomNav({ state, descriptors, navigation }: BottomTabBarProps)
             <Ionicons
               name={icon}
               size={24}
-              color={isFocused ? AlagaColors.accentBlue : '#A09688'}
+              color={isFocused ? CappyColors.accentBlue : '#A09688'}
               style={styles.icon}
             />
             <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>{label}</Text>
@@ -112,8 +112,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     minHeight: 76,
     borderTopWidth: 1,
-    borderTopColor: AlagaColors.border,
-    backgroundColor: AlagaColors.surface,
+    borderTopColor: CappyColors.border,
+    backgroundColor: CappyColors.surface,
     paddingTop: 8,
     paddingHorizontal: 8,
   },
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabActive: {
-    backgroundColor: AlagaColors.accentBlueSoft,
+    backgroundColor: CappyColors.accentBlueSoft,
   },
   icon: {
     marginBottom: 2,
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   },
   tabLabelActive: {
     fontWeight: '700',
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
   },
   fab: {
     position: 'absolute',
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: AlagaColors.accentBlue,
+    backgroundColor: CappyColors.accentBlue,
     borderWidth: 2,
     borderColor: '#FFFFFF',
     shadowColor: '#000000',

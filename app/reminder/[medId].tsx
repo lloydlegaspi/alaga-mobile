@@ -4,11 +4,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { EmotionCheckIn } from '@/components/alaga/EmotionCheckIn';
-import { useFeedback } from '@/components/alaga/FeedbackToast';
-import { ScreenContainer } from '@/components/alaga/ScreenContainer';
-import { ScreenHeader } from '@/components/alaga/ScreenHeader';
-import { AlagaColors } from '@/constants/alaga-theme';
+import { EmotionCheckIn } from '@/components/cappy/EmotionCheckIn';
+import { useFeedback } from '@/components/cappy/FeedbackToast';
+import { ScreenContainer } from '@/components/cappy/ScreenContainer';
+import { ScreenHeader } from '@/components/cappy/ScreenHeader';
+import { CappyColors } from '@/constants/cappy-theme';
 import { useEmotionInference } from '@/hooks/useEmotionInference';
 import { getMedicationById } from '@/lib/api/medications';
 import { createReminderEvent, getLatestReminderEventForMedication } from '@/lib/api/reminderEvents';
@@ -227,7 +227,7 @@ export default function ReminderScreen() {
               contentFit="cover"
             />
             <View style={[styles.photoHintChip, isConfused && styles.photoHintChipConfused]}>
-              <Ionicons name="scan-outline" size={14} color={isConfused ? '#FFFFFF' : AlagaColors.accentBlue} />
+              <Ionicons name="scan-outline" size={14} color={isConfused ? '#FFFFFF' : CappyColors.accentBlue} />
               <Text style={[styles.photoHintText, isConfused && styles.photoHintTextConfused]}>Tap photo to zoom</Text>
             </View>
           </Pressable>
@@ -253,7 +253,7 @@ export default function ReminderScreen() {
 
         {!isConfused && !isStressed ? (
           <Pressable style={styles.editButton} onPress={editMedication}>
-            <Ionicons name="create-outline" size={18} color={AlagaColors.accentBlue} />
+            <Ionicons name="create-outline" size={18} color={CappyColors.accentBlue} />
             <Text style={styles.editButtonText}>Edit Medication</Text>
           </Pressable>
         ) : null}
@@ -267,7 +267,7 @@ export default function ReminderScreen() {
               </Pressable>
 
               <Pressable style={styles.helpButton} onPress={onCallCaregiver} disabled={isSubmitting}>
-                <Ionicons name="call-outline" size={20} color={AlagaColors.accentBlue} />
+                <Ionicons name="call-outline" size={20} color={CappyColors.accentBlue} />
                 <Text style={styles.helpButtonText}>Call caregiver/help</Text>
               </Pressable>
 
@@ -335,19 +335,19 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   title: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
   },
   time: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 24,
     fontWeight: '800',
   },
   card: {
     borderRadius: 24,
-    backgroundColor: AlagaColors.surface,
+    backgroundColor: CappyColors.surface,
     borderWidth: 1,
     borderColor: '#E8EEF8',
     overflow: 'hidden',
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     borderColor: '#3B7EC8',
   },
   photoHintText: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
   },
   detailTime: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 4,
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   name: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 28,
     fontWeight: '800',
     lineHeight: 34,
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   indication: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 15,
   },
   instructionCard: {
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   instructionTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 25,
     fontWeight: '800',
     marginBottom: 4,
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   helperText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 16,
     lineHeight: 24,
     textAlign: 'center',
@@ -480,7 +480,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   editButtonText: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 15,
     fontWeight: '700',
   },
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 15,
   },
   takeButton: {
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
     minHeight: 58,
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: AlagaColors.borderBlue,
+    borderColor: CappyColors.borderBlue,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -555,7 +555,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   helpButtonText: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 18,
     fontWeight: '700',
   },
@@ -626,7 +626,7 @@ const styles = StyleSheet.create({
   },
   photoModalHint: {
     marginTop: 10,
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 13,
     textAlign: 'center',
   },

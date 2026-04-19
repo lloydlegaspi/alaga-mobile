@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { AlagaColors } from '@/constants/alaga-theme';
+import { CappyColors } from '@/constants/cappy-theme';
 
 interface SectionHeaderProps {
   title: string;
@@ -26,11 +26,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '800',
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
   },
   right: {
     fontSize: 13,
     fontWeight: '600',
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
   },
 });

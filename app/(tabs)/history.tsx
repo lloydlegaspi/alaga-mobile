@@ -2,10 +2,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { MedicationCard } from '@/components/alaga/MedicationCard';
-import { ScreenContainer } from '@/components/alaga/ScreenContainer';
-import { SectionHeader } from '@/components/alaga/SectionHeader';
-import { AlagaColors } from '@/constants/alaga-theme';
+import { MedicationCard } from '@/components/cappy/MedicationCard';
+import { ScreenContainer } from '@/components/cappy/ScreenContainer';
+import { SectionHeader } from '@/components/cappy/SectionHeader';
+import { CappyColors } from '@/constants/cappy-theme';
 import { getReminderHistorySections } from '@/lib/api/reminderEvents';
 import type { DayHistoryGroup, Medication } from '@/types/medication';
 
@@ -101,9 +101,9 @@ function HistoryGroup({ label, medications }: { label: string; medications: Medi
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: AlagaColors.surface,
+    backgroundColor: CappyColors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: AlagaColors.border,
+    borderBottomColor: CappyColors.border,
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 14,
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     marginBottom: 14,
   },
   filterWrap: {
@@ -133,10 +133,10 @@ const styles = StyleSheet.create({
   filterText: {
     fontSize: 13,
     fontWeight: '500',
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
   },
   filterTextActive: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontWeight: '700',
   },
   content: {
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   loadingText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
     marginBottom: 12,
   },
@@ -157,13 +157,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptyTitle: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 4,
   },
   emptyText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
   },
   list: {
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: AlagaColors.border,
+    backgroundColor: CappyColors.border,
     marginVertical: 18,
   },
 });

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "alaga-mobile",
-    "slug": "alaga-mobile",
+    "name": "cappy-mobile",
+    "slug": "cappy-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/cappy-logo.png",
-    "scheme": "alagamobile",
+    "scheme": "cappymobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -30,14 +30,14 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Alaga to use the camera for medication photos."
+          "cameraPermission": "Allow Cappy to use the camera for medication photos."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow Alaga to access your photo library for medication images.",
-          "cameraPermission": "Allow Alaga to use the camera for medication photos."
+          "photosPermission": "Allow Cappy to access your photo library for medication images.",
+          "cameraPermission": "Allow Cappy to use the camera for medication photos."
         }
       ],
       [

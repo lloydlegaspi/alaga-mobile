@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AlagaColors } from '@/constants/alaga-theme';
+import { CappyColors } from '@/constants/cappy-theme';
 
 interface ScreenContainerProps extends PropsWithChildren {
   padded?: boolean;
@@ -12,7 +12,7 @@ interface ScreenContainerProps extends PropsWithChildren {
 export function ScreenContainer({
   children,
   padded = false,
-  backgroundColor = AlagaColors.pageBackground,
+  backgroundColor = CappyColors.pageBackground,
 }: ScreenContainerProps) {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor }]} edges={['top']}>

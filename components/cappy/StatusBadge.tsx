@@ -1,16 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { AlagaColors } from '@/constants/alaga-theme';
+import { CappyColors } from '@/constants/cappy-theme';
 import type { MedStatus } from '@/types/medication';
 
 const STATUS_STYLES: Record<MedStatus, { backgroundColor: string; color: string }> = {
-  'Due Now': { backgroundColor: AlagaColors.accentBlue, color: '#FFFFFF' },
-  Later: { backgroundColor: AlagaColors.accentBlueSoft, color: AlagaColors.accentBlue },
-  Taken: { backgroundColor: AlagaColors.successBg, color: AlagaColors.success },
-  Snoozed: { backgroundColor: AlagaColors.accentBlueSoft, color: AlagaColors.accentBlue },
+  'Due Now': { backgroundColor: CappyColors.accentBlue, color: '#FFFFFF' },
+  Later: { backgroundColor: CappyColors.accentBlueSoft, color: CappyColors.accentBlue },
+  Taken: { backgroundColor: CappyColors.successBg, color: CappyColors.success },
+  Snoozed: { backgroundColor: CappyColors.accentBlueSoft, color: CappyColors.accentBlue },
   Pending: { backgroundColor: '#EEF2F7', color: '#667085' },
-  'Not Yet': { backgroundColor: AlagaColors.warningBg, color: AlagaColors.warning },
-  Missed: { backgroundColor: AlagaColors.dangerBg, color: AlagaColors.danger },
+  'Not Yet': { backgroundColor: CappyColors.warningBg, color: CappyColors.warning },
+  Missed: { backgroundColor: CappyColors.dangerBg, color: CappyColors.danger },
 };
 
 interface StatusBadgeProps {

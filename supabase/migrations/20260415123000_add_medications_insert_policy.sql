@@ -1,3 +1,3 @@
 -- Legacy no-op migration retained for remote migration history compatibility.
 -- All demo CRUD policies now live in:
--- 20260415120000_create_alaga_schema.sql
+-- 20260415120000_create_cappy_schema.sql

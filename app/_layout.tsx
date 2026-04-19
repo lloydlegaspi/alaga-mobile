@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import 'react-native-reanimated';
 
-import { FeedbackProvider } from '@/components/alaga/FeedbackToast';
-import { AlagaColors } from '@/constants/alaga-theme';
+import { FeedbackProvider } from '@/components/cappy/FeedbackToast';
+import { CappyColors } from '@/constants/cappy-theme';
 import { ensureAnonymousSession } from '@/lib/auth/guestSession';
 import { configureLocalMedicationNotifications } from '@/lib/notifications/medicationReminders';
 import { supabase } from '@/lib/supabase';
@@ -46,7 +46,7 @@ export default function RootLayout() {
     return (
       <FeedbackProvider>
         <View style={styles.bootstrapWrap}>
-          <ActivityIndicator size="large" color={AlagaColors.accentBlue} />
+          <ActivityIndicator size="large" color={CappyColors.accentBlue} />
           <Text style={styles.bootstrapTitle}>Preparing your private guest space...</Text>
           <Text style={styles.bootstrapSubtitle}>
             {authError ? 'Could not connect to secure guest auth yet.' : 'Connecting securely...'}
@@ -81,18 +81,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    backgroundColor: AlagaColors.pageBackground,
+    backgroundColor: CappyColors.pageBackground,
   },
   bootstrapTitle: {
     marginTop: 14,
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 18,
     fontWeight: '700',
     textAlign: 'center',
   },
   bootstrapSubtitle: {
     marginTop: 6,
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 14,
     textAlign: 'center',
   },
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
   },
   retryButtonText: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 15,
     fontWeight: '700',
   },

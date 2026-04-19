@@ -1,4 +1,4 @@
-export const AlagaColors = {
+export const CappyColors = {
   pageBackground: '#F5F3EF',
   surface: '#FFFFFF',
   surfaceMuted: '#EBF3FB',
@@ -17,7 +17,7 @@ export const AlagaColors = {
   dangerBg: '#FDECEA',
 } as const;
 
-export const AlagaRadius = {
+export const CappyRadius = {
   xs: 10,
   sm: 12,
   md: 16,

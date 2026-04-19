@@ -1,6 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AlagaColors } from '@/constants/alaga-theme';
+import { CappyColors } from '@/constants/cappy-theme';
 
 interface ConfirmDialogProps {
   visible: boolean;
@@ -78,13 +78,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   title: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 22,
     fontWeight: '800',
     marginBottom: 6,
   },
   message: {
-    color: AlagaColors.textSecondary,
+    color: CappyColors.textSecondary,
     fontSize: 16,
     lineHeight: 24,
     marginBottom: 14,
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelButtonText: {
-    color: AlagaColors.textMuted,
+    color: CappyColors.textMuted,
     fontSize: 17,
     fontWeight: '700',
   },
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   confirmButtonText: {
-    color: AlagaColors.danger,
+    color: CappyColors.danger,
     fontSize: 17,
     fontWeight: '700',
   },

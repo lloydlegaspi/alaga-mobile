@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AlagaColors } from '@/constants/alaga-theme';
+import { CappyColors } from '@/constants/cappy-theme';
 
 interface ScreenHeaderProps {
   title?: string;
@@ -14,13 +14,13 @@ export function ScreenHeader({
   title,
   onBack,
   backLabel = 'Back',
-  borderColor = AlagaColors.border,
+  borderColor = CappyColors.border,
 }: ScreenHeaderProps) {
   return (
     <View style={[styles.container, { borderBottomColor: borderColor }]}> 
       {onBack ? (
         <Pressable onPress={onBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color={AlagaColors.accentBlue} />
+          <Ionicons name="chevron-back" size={24} color={CappyColors.accentBlue} />
           <Text style={styles.backText}>{backLabel}</Text>
         </Pressable>
       ) : (
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   container: {
     minHeight: 58,
     borderBottomWidth: 1,
-    backgroundColor: AlagaColors.surface,
+    backgroundColor: CappyColors.surface,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
@@ -51,12 +51,12 @@ const styles = StyleSheet.create({
     paddingRight: 8,
   },
   backText: {
-    color: AlagaColors.accentBlue,
+    color: CappyColors.accentBlue,
     fontSize: 17,
     fontWeight: '600',
   },
   title: {
-    color: AlagaColors.textPrimary,
+    color: CappyColors.textPrimary,
     fontSize: 22,
     fontWeight: '800',
   },
